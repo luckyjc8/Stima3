@@ -2,6 +2,13 @@ ajak
 akan
 beliau
 khan
+pagi,
+siang,
+sore,
+malem,
+ehm
+ehh
+eh
 lah
 dong
 ahh
