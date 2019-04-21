@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     public static ArrayList<DialogueLine> dialogue; /* Chat history data up to 100 lines of dialogue. */
     public TextView dialogueView; /* The space showing chat history. */
     public ImageView character;   /* The space showing the bot character. */
+    public int algo=1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,9 +109,34 @@ public class MainActivity extends AppCompatActivity {
         EditText editText = findViewById(R.id.input);
         String newInput = editText.getText().toString();
 
+
         /* Adding input to the chat history. */
-        addLine("Input", newInput);
+        addLine("input : ",newInput);
         if(newInput.length()==0){
+            return;
+        }
+        else if(newInput.equals("algo1")){
+            algo = 1;
+            addLine("Output", "Algoritma yang digunakan : KMP");
+            printDialogue();
+            changeExpression("answer");
+            hideKeyboard(this);
+            return;
+        }
+        else if(newInput.equals("algo2")){
+            algo = 2;
+            addLine("Output", "Algoritma yang digunakan : BM");
+            printDialogue();
+            changeExpression("answer");
+            hideKeyboard(this);
+            return;
+        }
+        else if(newInput.equals("algo3")){
+            algo = 3;
+            addLine("Output", "Algoritma yang digunakan : Regex");
+            printDialogue();
+            changeExpression("answer");
+            hideKeyboard(this);
             return;
         }
         printDialogue();
@@ -125,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
         /* Adding output to the chat history. */
 
         StringMatcher sm = new StringMatcher(this);
-        String answer = sm.answerQuery(newInput,3);
+        String answer = sm.answerQuery(newInput,algo);
         addLine("Output", answer);
         printDialogue();
 
