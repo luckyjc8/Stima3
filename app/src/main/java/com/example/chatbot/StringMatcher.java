@@ -8,13 +8,15 @@ import java.io.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import android.content.Context;
+import android.util.Log;
 
 class StringMatcher {
 	private ArrayList<String>[] dict;
 	private HashMap<String, String> qs;
 	private Context files;
+	private static int treshold = 50;
 
-    public String no_ans = "Maaf, kurang ngerti maksud pertanyaannya...";
+	public String no_ans = "Maaf, kurang ngerti maksud pertanyaannya...";
 
 	public StringMatcher(Context context) {
 		//INISIALISASI ASSETS
@@ -26,9 +28,18 @@ class StringMatcher {
 		qs = initDB();
 	}
 
-	public String answerQuery(String inp1,int inp2) {
+	public String getQuestion(String ans){
+		for (String q : qs.keySet()) {
+			if(qs.get(q).equals(ans)){
+				return q;
+			}
+		}
+		return "";
+	}
+
+	public ArrayList<String> answerQuery(String inp1,int inp2) {
 		//MENERIMA INPUT PENGGUNA
-		String answer = no_ans;
+		ArrayList<String> answer = new ArrayList<String>();
 		String text = removeStopWords(synonim(inp1.substring(0, inp1.length() - 1), dict));
 		if (inp2 == 1) {
 			float p = -1;
@@ -36,26 +47,26 @@ class StringMatcher {
 				if (inp1.length() > removeStopWords(q).length()) {
 					p = kmpMatch(text, removeStopWords(q));
 					//System.out.println("p " + p);
-					if (p >= 70) { //TENTATIVE
-						answer = qs.get(q);
-						break;
+					Log.d("1 : ",Float.toString(p));
+					if (p >= treshold) { //TENTATIVE
+						answer.add(qs.get(q));
 					}
 				} else {
 					p = kmpMatch(removeStopWords(q), text);
 					//System.out.println("p " + p);
-					if (p >= 70) { //TENTATIVE
-						answer = qs.get(q);
-						break;
+					Log.d("2 : ",Float.toString(p));
+					if (p >= treshold) { //TENTATIVE
+						answer.add(qs.get(q));
 					}
 				}
 			}
 			if (p == -1) {
 				for (String q : qs.keySet()) {
 					p = alternativeFunc(text, removeStopWords(q));
+					Log.d("3 : ",Float.toString(p));
 					//System.out.println("p " + p);
-					if (p >= 70) {
-						answer = qs.get(q);
-						break;
+					if (p >= treshold) {
+						answer.add(qs.get(q));
 					}
 				}
 			}
@@ -65,25 +76,22 @@ class StringMatcher {
 				if (inp1.length() > removeStopWords(q).length()) {
 					p = bmMatch(text, removeStopWords(q));
 					//System.out.println("p " + p);
-					if (p >= 70) { //TENTATIVE
-						answer = qs.get(q);
-						break;
+					if (p >= treshold) { //TENTATIVE
+						answer.add(qs.get(q));
 					}
 				} else {
 					p = bmMatch(removeStopWords(q), text);
 					//System.out.println("p " + p);
-					if (p >= 70) { //TENTATIVE
-						answer = qs.get(q);
-						break;
+					if (p >= treshold) { //TENTATIVE
+						answer.add(qs.get(q));
 					}
 				}
 			}
 			if (p == -1) {
 				for (String q : qs.keySet()) {
 					p = alternativeFunc(text, removeStopWords(q));
-					if (p >= 70) {
-						answer = qs.get(q);
-						break;
+					if (p >= treshold) {
+						answer.add(qs.get(q));
 					}
 				}
 			}
@@ -97,15 +105,45 @@ class StringMatcher {
 				pat += ")";
 				Pattern p = Pattern.compile(pat);
 				Matcher m = p.matcher(inp1);
-				if (m.find()) {
-					answer = qs.get(q);
+				boolean valid = m.find();
+				valid = valid && compareStrings(q,inp1,1)>=treshold;
+				valid = valid && compareStrings(q,inp1,2)>=treshold;
+				if (valid) {
+					answer.add(qs.get(q));
 					break;
 				}
 			}
 		} else {
 			System.out.println("Masukan salah");
 		}
+		if(answer.size()==0){
+			answer.add(no_ans);
+		}
 		return answer;
+	}
+
+	public float compareStrings(String text, String pattern, int inp){
+		float p = 0;
+		if (inp == 1) {
+			if (text.length() > pattern.length()) {
+				p = kmpMatch(text, pattern);
+			} else {
+				p = kmpMatch(pattern, text);
+			}
+			if (p == 0) {
+				p = alternativeFunc(text, pattern);
+			}
+		} else if (inp == 2) {
+			if (text.length() > pattern.length()) {
+				p = bmMatch(text, pattern);
+			} else {
+				p = bmMatch(pattern, text);
+			}
+			if (p == 0) {
+				p = alternativeFunc(text, pattern);
+			}
+		}
+		return p;
 	}
 
 	public float kmpMatch(String text, String pattern) {

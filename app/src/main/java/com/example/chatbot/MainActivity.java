@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -14,9 +13,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.ImageView;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.*;
 import java.util.ArrayList;
 
 
@@ -111,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         /* Adding input to the chat history. */
-        addLine("input : ",newInput);
+
         if(newInput.length()==0){
             return;
         }
@@ -149,22 +145,33 @@ public class MainActivity extends AppCompatActivity {
         // call method to process string
 
         /* Adding output to the chat history. */
-
+        addLine("Input",newInput);
         StringMatcher sm = new StringMatcher(this);
-        String answer = sm.answerQuery(newInput,algo);
-        addLine("Output", answer);
+        ArrayList<String> answer = sm.answerQuery(newInput,algo);
+        if(answer.size() == 1) {
+            addLine("Output", answer.get(0));
+            if (answer.get(0) == sm.no_ans) {
+                changeExpression("surrender");
+            } else {
+                changeExpression("answer");
+            }
+        }
+        else{
+            String result = "<html>Apakah maksud anda :<br>";
+            for(String ans : answer){
+                result += "&nbsp;&nbsp;&nbsp;&nbsp;"+sm.getQuestion(ans)+"?<br>";
+            }
+            result+="</html>";
+            addLine("Output", result);
+            changeExpression("answer");
+        }
         printDialogue();
 
         /* Change expression to:
          *  - "answer" if answer found
          *  - "clarify" if there are several possible answers
          *  - "surrender" if no answer is found */
-        if(answer == sm.no_ans){
-            changeExpression("surrender");
-        }
-        else {
-            changeExpression("answer");
-        }
+
     }
 
 }
