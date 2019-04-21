@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ChatBot</string>
+    <string name="hint_text">Balas pertanyaan</string>
+    <string name="ask_button">Kirim</string>
+</resources>
