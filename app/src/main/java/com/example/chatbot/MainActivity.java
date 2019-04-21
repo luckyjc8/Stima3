@@ -6,13 +6,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.ImageView;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
+
 
 public class MainActivity extends AppCompatActivity {
     public static ArrayList<DialogueLine> dialogue; /* Chat history data up to 100 lines of dialogue. */
@@ -104,6 +110,9 @@ public class MainActivity extends AppCompatActivity {
 
         /* Adding input to the chat history. */
         addLine("Input", newInput);
+        if(newInput.length()==0){
+            return;
+        }
         printDialogue();
 
         /* Change expression, reset field to empty. */
@@ -114,14 +123,22 @@ public class MainActivity extends AppCompatActivity {
         // call method to process string
 
         /* Adding output to the chat history. */
-        addLine("Output", "Example of an answer.");
+
+        StringMatcher sm = new StringMatcher(this);
+        String answer = sm.answerQuery(newInput,3);
+        addLine("Output", answer);
         printDialogue();
 
         /* Change expression to:
          *  - "answer" if answer found
          *  - "clarify" if there are several possible answers
          *  - "surrender" if no answer is found */
-        changeExpression("answer");
+        if(answer == sm.no_ans){
+            changeExpression("surrender");
+        }
+        else {
+            changeExpression("answer");
+        }
     }
 
 }
